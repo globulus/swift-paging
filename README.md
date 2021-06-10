@@ -2,24 +2,25 @@
 
 Swift Paging is a framework that helps you load and display pages of data from a larger dataset from local storage or over network. This approach allows your app to use both network bandwidth and system resources more efficiently. It is fully build on top of **Combine**, allowing you to harness its power, handle errors, etc.
 
-**Features**:
+## Features
+
  * A *server-client* architecture for requesting and receiving data.
  * Requests and responses go through Combine.
  * Support for **interceptors** that allow for custom logic - logging, caching, CoreData interop, etc.
  * Built-in deduplication of requests, conditional retries and error handling.
  * Automatic state management - know what paging operation your apps is currently doing and which data is available to it.
  
- #### Installation
+ ## Installation
  
  This component is distributed as a **Swift Package**. Simply add the URL of this Git to your dependencies list and it'll work.
  
- #### Demo apps
+ ## Demo apps
  
  If you want to jump straight to the action, there are two demo apps you can try - implemented in [UIKit]() or [SwiftUI](). They both do the same thing - represent an infinite scroll of Github repositories that contain the word *swift*. The lists are refreshable and the apps use CoreData for local storage. Overall, it represents a good use case for the framework.
 
-#### Core Concepts
+## Core Concepts
 
-##### TL;DR
+### TL;DR
 
 1. When you want data, have your `RequestPublisher` send a `PagingRequest`. The request uniquely identifies the data that should come back via its `key` and `params`. It represents a refresh, prepending or appending operation.
 1. Your `PaginationManager` will notify your app that the request is processed, so that it updates its UI.
@@ -29,7 +30,7 @@ Swift Paging is a framework that helps you load and display pages of data from a
 
 There might seem like many concepts, but in reality you only need to implement `PagingSource` and `PaginationManagerOutput`. If you want to use `CoreDataPagingInterceptor`,  you'll need to implement a `CoreDataInterceptorDataSource` as well.
 
-##### In depth
+### In depth
 
  * Your data is organized in **Pages**. Each `Page` has an ID that identifies it in your paging structure, and contains an array of **values**.
  * A **PagingRequest** is an event that prompts the framework to return a **Page**. The request contains the Key, as well as other parameters (which are customizable). There are 3 types of requests: refresh, append and prepend. A **RequestPublisher** is a Combine publisher that produces requests on-demand.
@@ -40,9 +41,9 @@ There might seem like many concepts, but in reality you only need to implement `
 * **Pager** is the glue that binds all these components together, mapping requests from the publisher, passing through interceptor and finally to the paging source.
 * **PaginationManager** ties in the State component to all, allowing you to monitor all the values, state of refreshing etc.
 
-#### Implementing a PagingSource
+## Implementing a PagingSource
 
-#### Storing pages in DB
+## Storing pages in DB
 
 A common use case is to have a permanent client-side storage in the form of CoreData DB. SwiftPaging allows you fetch pages from the DB and store them. (This is an interceptor - [read more on interceptors here](#interceptors)).
 
@@ -109,9 +110,9 @@ interceptors: [..., CoreDataInterceptor(dataSource: dataSource), ...])
 
 > The specific nature of CoreData will most likely force you to use your data source in your paging source...
 
-#### Using PaginationManager
+## Using PaginationManager
 
-#### Interceptors
+## Interceptors
 
 Interceptors are a powerful mechanism that can monitor and rewrite requests, or even complete them on the spot. After a `Page` is returned, all interceptors are notified of it, and can use it to modify their internal state. You can chain any number of interceptors in your **Pager**.
 
@@ -179,7 +180,7 @@ public class CacheInterceptor<Key: Hashable, Value>: PagingInterceptor<Key, Valu
 
 [CoreDataInterceptor]() works in a similar fashion.
 
-##### Writing your own interceptor
+### Writing your own interceptor
 
 Creating an interceptor is easy enough:
 
