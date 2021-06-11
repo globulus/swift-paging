@@ -73,8 +73,8 @@ public class Pager<Key, Value, Source: PagingSource> where Source.Key == Key, So
                 case .proceed(let request, handleAfterwards: _):
                     return source.fetch(request: request)
                         .retry(times: request.params.retryPolicy?.maxRetries ?? 0,
-                               if: request.params.retryPolicy?.shouldRetry ?? { _ in false }
-                        ).handleEvents(receiveOutput: { result in
+                               if: request.params.retryPolicy?.shouldRetry ?? { _ in false })
+                        .handleEvents(receiveOutput: { result in
                             for interceptor in intercepted.interceptorsToHandleAfterwards {
                                 interceptor.handle(result: result)
                             }

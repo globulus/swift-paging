@@ -18,6 +18,33 @@ public protocol PaginationManagerOutput {
     var values: [Value] { get }
 }
 
+/**
+ Default implementation of **PaginationManagerOutput**. Can be used to jump-start custom **PaginationManager** or when there's no need for more logic requiring a custom **PaginationManagerOutput** implementation.
+ */
+public struct DefaultPaginationManagerOutput<Value>: PaginationManagerOutput {
+    public static var initial: DefaultPaginationManagerOutput<Value> {
+        DefaultPaginationManagerOutput(isRefreshing: false,
+                                       isPrepending: false,
+                                       isAppending: false,
+                                       values: [])
+    }
+    
+    public let isRefreshing: Bool
+    public let isPrepending: Bool
+    public let isAppending: Bool
+    public let values: [Value]
+    
+    public init(isRefreshing: Bool,
+                isPrepending: Bool,
+                isAppending: Bool,
+                values: [Value]) {
+        self.isRefreshing = isRefreshing
+        self.isPrepending = isPrepending
+        self.isAppending = isAppending
+        self.values = values
+    }
+}
+
 open class PaginationManager<Key, Value, Source: PagingSource, Output: PaginationManagerOutput>
 where Source.Key == Key, Source.Value == Value, Output.Value == Value {
     private let pageSize: Int

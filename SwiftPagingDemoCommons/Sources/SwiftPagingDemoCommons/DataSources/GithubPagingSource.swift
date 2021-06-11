@@ -53,27 +53,7 @@ public class GithubPagingSource<DataSource: GithubDataSource>: PagingSource {
     }
 }
 
-public struct GithubPagingState: PaginationManagerOutput {
-    public static let initial = GithubPagingState(isRefreshing: false,
-                                           isPrepending: false,
-                                           isAppending: false,
-                                           values: [])
-    
-    public let isRefreshing: Bool
-    public let isPrepending: Bool
-    public let isAppending: Bool
-    public let values: [Repo]
-    
-    public init(isRefreshing: Bool,
-                isPrepending: Bool,
-                isAppending: Bool,
-                values: [Repo]) {
-        self.isRefreshing = isRefreshing
-        self.isPrepending = isPrepending
-        self.isAppending = isAppending
-        self.values = values
-    }
-}
+public typealias GithubPagingState = DefaultPaginationManagerOutput<Repo>
 
 public class GithubPaginationManager<PagingSource: GithubPagingSource<GithubDataSourceImpl>>: PaginationManager<Int, Repo, PagingSource, GithubPagingState> {
     
