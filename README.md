@@ -1,6 +1,6 @@
 # SwiftPaging
 
-Swift Paging is a framework that helps you load and display pages of data from a larger dataset from local storage or over network. This approach allows your app to use both network bandwidth and system resources more efficiently. It is fully build on top of **Combine**, allowing you to harness its power, handle errors, etc.
+Swift Paging is a framework that helps you load and display pages of data from a larger dataset from local storage or over network. This approach allows your app to use both network bandwidth and system resources more efficiently. It's built on top of **Combine**, allowing you to harness its full power, handle errors easily, etc.
 
 ## Features
 
