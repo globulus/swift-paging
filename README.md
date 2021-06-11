@@ -53,6 +53,7 @@ SwiftPaging tries to make complex things simple, but it still may seem like ther
   * You can trigger requests using methods - `refresh`, `prepend` and `append`.
   * Keeps track of request order, and makes sure that refresh updates all the data, while prepend and append add the data to beginning and end, respectively.
   * It publishes a `PaginationManagerOutput`which contains the full pagination state. You can implement your own `PaginationManagerOutput` or use the `DefaultPaginationManagerOutput` implementation.
+  * Makes sure all pagination is done on a background thread, while the state is published on `DispatchQueue.main`.
 
 ## Implementing a PagingSource
 
@@ -188,9 +189,7 @@ Then, subscribe to its state publisher wherever necessary. Here's the example fr
 
 ```swift
 paginationManager.publisher
-    .subscribe(on: DispatchQueue.init(label: "myQ", qos: .background, attributes: [], autoreleaseFrequency: .never, target: nil))
     .replaceError(with: GithubPagingState.initial)
-    .receive(on: DispatchQueue.main)
     .sink { [self] state in
         if !state.isRefreshing {
             refreshComplete?()

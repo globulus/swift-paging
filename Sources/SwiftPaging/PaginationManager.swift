@@ -53,11 +53,19 @@ where Source.Key == Key, Source.Value == Value, Output.Value == Value {
     
     private var lastPrependPage: Page<Key, Value>?
     private var lastAppendPage: Page<Key, Value>?
+    private let backgroundQueue = DispatchQueue.init(label: "PaginationManager Queue \(UUID().uuidString)",
+                                           qos: .background,
+                                           attributes: [],
+                                           autoreleaseFrequency: .never,
+                                           target: nil)
     private var subs = Set<AnyCancellable>()
     
     private var subject = CurrentValueSubject<Output, Error>(.initial)
     public var publisher: AnyPublisher<Output, Error> {
-        subject.eraseToAnyPublisher()
+        subject
+            .subscribe(on: backgroundQueue)
+            .receive(on: DispatchQueue.main)
+            .eraseToAnyPublisher()
     }
     
     public init(source: Source,

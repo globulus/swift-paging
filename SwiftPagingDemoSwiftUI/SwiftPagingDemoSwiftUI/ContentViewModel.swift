@@ -32,12 +32,9 @@ class ContentViewModel: ObservableObject {
                                                     pageSize: 15,
                                                     interceptors: [LoggingInterceptor<Int, Repo>(), CoreDataInterceptor(dataSource: dataSource)])
         
-        let pub = paginationManager.publisher
-            .subscribe(on: DispatchQueue.init(label: "myQ", qos: .background, attributes: [], autoreleaseFrequency: .never, target: nil))
+        paginationManager.publisher
             .replaceError(with: GithubPagingState.initial)
-            .receive(on: DispatchQueue.main)
-        
-        pub.sink { [self] state in
+            .sink { [self] state in
             if !state.isRefreshing {
                 refreshComplete?()
                 refreshComplete = nil
