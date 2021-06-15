@@ -8,19 +8,32 @@
 import Foundation
 import CoreData
 
+/**
+
+ It makes a distinction between your DB model (Value) and its remote variant (RemoteValue), allowing you to work with different models.
+ If the model coming back from your remote API is exactly the same as your CoreDataModel, use the same value for Value and RemoteValue.
+ */
 public protocol CoreDataInterceptorDataSource {
-    associatedtype Key: Equatable
-    associatedtype Value: NSManagedObject
-    associatedtype RemoteValue
-    func get(request: PagingRequest<Key>) throws -> [Value]
-    func insert(remoteValues: [RemoteValue], in moc: NSManagedObjectContext) throws -> [Value]
-    func deleteAll(in moc: NSManagedObjectContext) throws
+    associatedtype Key: Equatable // request key
+    associatedtype Value: NSManagedObject // CoreData model
+    associatedtype RemoteValue // remote API model, can be the same as Value
+    func get(request: PagingRequest<Key>) throws -> [Value] // fetch data from the DB based on the provided request
+    func insert(remoteValues: [RemoteValue], in moc: NSManagedObjectContext) throws -> [Value] // store data that came from PagingSource into the DB and return the mapped values
+    func deleteAll(in moc: NSManagedObjectContext) throws // clear the DB
 }
 
+/**
+ Used for keys to pass parameters needed by **CoreDataInterceptor** in **PagingRequestParams.userInfo**.
+ */
 public enum CoreDataInterceptorUserInfoParams {
-    case moc, hardRefresh
+    case moc, // the NSManagedObjectContext to use with CoreData
+         hardRefresh // set to true to purge the DB on a refresh
 }
 
+/**
+ An Interceptor that fetches and stores data from a CoreData DB, allowing for persistent local storage of paged data. Uses **CoreDataInterceptorDataSource**
+ implementation as an interface to the DB
+ */
 public class CoreDataInterceptor<Key, Value, DataSource: CoreDataInterceptorDataSource>: PagingInterceptor<Key, Value>
 where DataSource.Key == Key, DataSource.Value == Value {
     private let dataSource: DataSource

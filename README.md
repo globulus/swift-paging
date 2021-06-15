@@ -57,9 +57,9 @@ SwiftPaging tries to make complex things simple, but it still may seem like ther
 
 ## Implementing a PagingSource
 
-A `PagingSource` responds to `PagingRequests` and returns `Pages`. It also knows where does paging start and what are its boundaries (first and last page). `PagingSource` normally represents your remote API, but can represent any paginated data source.
+A `PagingSource` responds to `PagingRequests` and returns `Pages`. It also knows where does refreshing start and what are its boundaries (first and last page). `PagingSource` normally represents your remote API, but can represent any paginated data source.
 
-In the demo apps, the `PagingSource` fetches `Repo`s from Github's API. It pages are identifies by numbers, so its `Key` is `Int`. It has three overrides:
+In the demo apps, the `PagingSource` fetches `Repo`s from Github's API. Its pages are identified by numbers, so its `Key` is `Int`. It has three overrides:
 
 * `refreshKey` tells the origin point of pagination, the key of the first page:
 
@@ -275,7 +275,7 @@ public class CacheInterceptor<Key: Hashable, Value>: PagingInterceptor<Key, Valu
 Creating an interceptor is easy enough:
 
 1. Subclass `PagingInterceptor`.
-1. Override `intercept(request:)`. From it, return:
+2. Override `intercept(request:)`. From it, return:
   1. `.complete(Page)` if your interceptor should respond to the request and terminate furhter request propagation.
-  1. `.proceed(PagingRequest, handleAfterwards: Bool)` if the request should go forward. You can modify the original request in any way you want, or keep it as is. Set `handleAfterwards:` parameter to `true` if you want `handle(result:)` to be invoked for this interceptor once the response `Page` comes back.
-1. Override `handle(result:)` to observe the `Page` generated for the request.
+  2. `.proceed(PagingRequest, handleAfterwards: Bool)` if the request should go forward. You can modify the original request in any way you want, or keep it as is. Set `handleAfterwards:` parameter to `true` if you want `handle(result:)` to be invoked for this interceptor once the response `Page` comes back.
+3. Override `handle(result:)` to observe the `Page` generated for the request.

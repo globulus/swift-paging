@@ -16,7 +16,6 @@ public typealias PagingResultPublisher<Key: Equatable, Value> = AnyPublisher<Pag
 public protocol PagingSource: AnyObject {
     associatedtype Key: Equatable
     associatedtype Value
-    
     var refreshKey: Key { get }
     func keyChain(for key: Key) -> PagingKeyChain<Key>
     func fetch(request: PagingRequest<Key>) -> PagingResultPublisher<Key, Value>

@@ -53,11 +53,11 @@ where Source.Key == Key, Source.Value == Value, Output.Value == Value {
     
     private var lastPrependPage: Page<Key, Value>?
     private var lastAppendPage: Page<Key, Value>?
-    private let backgroundQueue = DispatchQueue.init(label: "PaginationManager Queue \(UUID().uuidString)",
-                                           qos: .background,
-                                           attributes: [],
-                                           autoreleaseFrequency: .never,
-                                           target: nil)
+    private let backgroundQueue = DispatchQueue(label: "PaginationManager Queue \(UUID().uuidString)",
+                                                qos: .background,
+                                                attributes: [],
+                                                autoreleaseFrequency: .never,
+                                                target: nil)
     private var subs = Set<AnyCancellable>()
     
     private var subject = CurrentValueSubject<Output, Error>(.initial)
@@ -71,41 +71,42 @@ where Source.Key == Key, Source.Value == Value, Output.Value == Value {
     public init(source: Source,
                 pageSize: Int,
                 interceptors: [PagingInterceptor<Key, Value>]) {
-        pager = Pager(source: source,
-                      requestPublisher: requestSource.publisher,
+        pager = Pager(pagingSource: source,
+                      requestSource: requestSource,
                       interceptors: interceptors)
         self.pageSize = pageSize
         pager.publisher
-            .sink { completion in
-                print("received completion: \(completion)")
+            .sink { [self] completion in
+//                print("received completion: \(completion)")
+                subject.send(completion: completion)
             } receiveValue: { [self] pagingState in
-                print("received state: \(pagingState)")
+//                print("received state: \(pagingState)")
                 let output = subject.value
                 switch pagingState {
                 case .refreshing:
                     subject.send(Output(isRefreshing: true,
-                                    isPrepending: false,
-                                    isAppending: false,
-                                    values: output.values))
+                                        isPrepending: false,
+                                        isAppending: false,
+                                        values: output.values))
                 case .prepending:
                     subject.send(Output(isRefreshing: false,
-                                    isPrepending: true,
-                                                 isAppending: output.isAppending,
-                                                 values: output.values))
+                                        isPrepending: true,
+                                        isAppending: output.isAppending,
+                                        values: output.values))
                 case .appending:
                     subject.send(Output(isRefreshing: false,
-                                    isPrepending: output.isPrepending,
-                                    isAppending: true,
-                                    values: output.values))
+                                        isPrepending: output.isPrepending,
+                                        isAppending: true,
+                                        values: output.values))
                 case .done(let page):
                     switch page.request {
                     case .refresh(_):
                         lastPrependPage = page
                         lastAppendPage = page
                         subject.send(Output(isRefreshing: false,
-                                        isPrepending: output.isPrepending,
-                                        isAppending: output.isAppending,
-                                        values: page.values))
+                                            isPrepending: output.isPrepending,
+                                            isAppending: output.isAppending,
+                                            values: page.values))
                     case .prepend(_):
                         var values = output.values
                         if lastPrependPage?.key == page.key {
@@ -114,9 +115,9 @@ where Source.Key == Key, Source.Value == Value, Output.Value == Value {
                         }
                         lastPrependPage = page
                         subject.send(Output(isRefreshing: false,
-                                        isPrepending: false,
-                                        isAppending: output.isAppending,
-                                        values: page.values + values))
+                                            isPrepending: false,
+                                            isAppending: output.isAppending,
+                                            values: page.values + values))
                     case .append(_):
                         var values = output.values
                         if lastAppendPage?.key == page.key {
@@ -125,9 +126,9 @@ where Source.Key == Key, Source.Value == Value, Output.Value == Value {
                         }
                         lastAppendPage = page
                         subject.send(Output(isRefreshing: false,
-                                        isPrepending: output.isPrepending,
-                                        isAppending: false,
-                                        values: values + page.values))
+                                            isPrepending: output.isPrepending,
+                                            isAppending: false,
+                                            values: values + page.values))
                     }
                 }
             }.store(in: &subs)
@@ -144,8 +145,7 @@ where Source.Key == Key, Source.Value == Value, Output.Value == Value {
             } else if let prevKey = lastPage.request.params.keyChain.prevKey {
                 requestSource.send(request: .prepend(requestParams(for: prevKey, userInfo: userInfo)))
             } else {
-                // TODO handle
-                print("no prev data")
+//                print("no prev data")
             }
         } else {
             refresh(userInfo: userInfo)
@@ -159,8 +159,7 @@ where Source.Key == Key, Source.Value == Value, Output.Value == Value {
             } else if let nextKey = lastPage.request.params.keyChain.nextKey {
                 requestSource.send(request: .append(requestParams(for: nextKey, userInfo: userInfo)))
             } else {
-                // TODO handle
-                print("no next data")
+//                print("no next data")
             }
         } else {
             refresh(userInfo: userInfo)

@@ -27,7 +27,6 @@ public class PagingInterceptor<Key: Equatable, Value> {
 public let cacheInterceptorDefaultExpirationInterval = TimeInterval(10 * 60) // 10 min
 
 public class CacheInterceptor<Key: Hashable, Value>: PagingInterceptor<Key, Value> {
-    
     private let expirationInterval: TimeInterval
     private var cache = [Key: CacheEntry]()
     

@@ -17,6 +17,10 @@ public enum PagingState<Key: Equatable, Value> {
 
 private let deduplicationInterval: TimeInterval = 0.25
 
+/**
+ Pager is the glue that binds all PagingSource, RequestPublisher components together, mapping requests from the publisher, passing through interceptor and finally to the paging source.
+ It publishes PagingStates that allow your app to respond to paging events and update the UI. Working with a Pager directly offers the most flexibility and customizations.
+ */
 public class Pager<Key, Value, Source: PagingSource> where Source.Key == Key, Source.Value == Value {
     public typealias Interceptor = PagingInterceptor<Key, Value>
     public typealias Result = PagingState<Key, Value>
@@ -24,19 +28,19 @@ public class Pager<Key, Value, Source: PagingSource> where Source.Key == Key, So
     public let source: Source
     public let interceptors: [Interceptor]
     
-    private var subscriptions = Set<AnyCancellable>()
+    private var subs = Set<AnyCancellable>()
     
     private let subject = PassthroughSubject<Result, Error>()
     public var publisher: AnyPublisher<Result, Error> {
         subject.eraseToAnyPublisher()
     }
     
-    public init(source: Source,
-                requestPublisher: AnyPublisher<PagingRequest<Key>, Never>,
+    public init(pagingSource: Source,
+                requestSource: PagingRequestSource<Key>,
                 interceptors: [Interceptor] = []) {
-        self.source = source
+        self.source = pagingSource
         self.interceptors = interceptors
-        requestPublisher
+        requestSource.publisher
             .removeDuplicates(by: { previous, current in
                 current.matches(previous) && current.params.timestamp - previous.params.timestamp < deduplicationInterval
             }).handleEvents(receiveOutput: { [self] request in
@@ -68,7 +72,7 @@ public class Pager<Key, Value, Source: PagingSource> where Source.Key == Key, So
                 }
                 return InterceptedRequest(result: .proceed(mutableRequest, handleAfterwards: false),
                                           interceptorsToHandleAfterwards: interceptorsToHandleAfterwards)
-            }.flatMap { intercepted -> PagingResultPublisher<Key, Value> in
+            }.flatMap { [self] intercepted -> PagingResultPublisher<Key, Value> in
                 switch intercepted.result {
                 case .proceed(let request, handleAfterwards: _):
                     return source.fetch(request: request)
@@ -90,7 +94,7 @@ public class Pager<Key, Value, Source: PagingSource> where Source.Key == Key, So
                 }
             } receiveValue: { [self] page in
                 subject.send(.done(page))
-            }.store(in: &subscriptions)
+            }.store(in: &subs)
     }
     
     private struct InterceptedRequest {
